@@ -1,0 +1,6 @@
+[submodule "backend"]
+	path = backend
+	url = git@github.com:heroku-starter-projects/heroku-starter-flask.git
+[submodule "frontend"]
+	path = frontend
+	url = git@github.com:heroku-starter-projects/heroku-starter-reactjs.git

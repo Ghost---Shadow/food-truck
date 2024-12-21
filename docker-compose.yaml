@@ -36,8 +36,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - 5002:5002
+    # ports:
+    #   - 5002:5002
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
       interval: 30s
@@ -47,8 +47,8 @@ services:
 
   food-truck-frontend:
     build: ./frontend
-    ports:
-      - 3000:3000
+    # ports:
+    #   - 3000:3000
     environment:
       - ENV=production
     depends_on:

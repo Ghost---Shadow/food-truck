@@ -1,0 +1,70 @@
+version: "3.9"
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+    depends_on:
+      - food-truck-frontend
+      - food-truck-backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  food-truck-backend:
+    build: ./backend
+    environment:
+      - ENV=production
+      - DEBUG=0
+      - LOG_LEVEL=INFO
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+      - DB_NAME=postgres
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_SSL_MODE=disable
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=5002
+      - CONCURRENCY=2
+      - JWT_SECRET=whatever
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - 5002:5002
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  food-truck-frontend:
+    build: ./frontend
+    ports:
+      - 3000:3000
+    environment:
+      - ENV=production
+    depends_on:
+      - food-truck-backend
+
+  postgres:
+    image: postgis/postgis:14-3.3
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d/
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
